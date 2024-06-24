@@ -14,8 +14,6 @@ const ChatRoomSideBar = () => {
 
   }, [setIsChatRoomShow]);
 
-  },[setIsChatRoomShow])
-
   const DrawerHeader = styled("div")(({ theme }) => ({
     display: "flex",
     height: "8rem",
@@ -26,12 +24,6 @@ const ChatRoomSideBar = () => {
   }));
 
   return (
-
-    <DrawerHeader>
-      <ArrowForwardIosIcon
-        onClick={handleChatRoomClose}
-        sx={{ color: "white" }}
-        className="cursor-pointer"
 
     <DrawerHeader >
       <ArrowForwardIosIcon 
