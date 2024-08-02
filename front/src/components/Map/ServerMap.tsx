@@ -3,9 +3,7 @@ import { EventBus } from "./EventBus";
 import { ServerMapProps, ServerMapTypes } from "../../types/map";
 import EnterServer from "./main";
 import VideoCallBoxList from "../VideoCall/VideoCallBoxList";
-
 import useChatInputStore from "../../store/useChatInputStore";
-
 import VideoCallToolBar from "../VideoCall/VideoCallToolBar";
 
 
@@ -16,7 +14,6 @@ export const ServerMap = forwardRef<ServerMapTypes, ServerMapProps>(
     // Phaser.Game 인스턴스를 저장하기 위한 ref 생성
     const mapRef = useRef<Phaser.Game | null>(null!);
     const chatInputValue = useChatInputStore((state) => state.inputValue);
-
     // 브라우저 화면 크기에 따라서 맵의 크기도 리사이즈 되는 함수
     const resizeMap = () => {
       if (mapRef.current) {
@@ -93,6 +90,7 @@ export const ServerMap = forwardRef<ServerMapTypes, ServerMapProps>(
       return () => {
         EventBus.removeListener("current-scene-ready");
       };
+      
     }, [currentActiveScene, ref]);
 
     useEffect(() => {}, []);

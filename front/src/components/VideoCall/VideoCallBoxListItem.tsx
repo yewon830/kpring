@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { Box } from '@mui/material';
 import { ServerMember } from '../../types/server';
 
@@ -6,8 +6,25 @@ interface MemberListItemProps{
   member: ServerMember;
 }
 
-const VideoCallBoxListItem : React.FC<MemberListItemProps>= ({member}) => {
-  
+interface VideoListItemProps {
+  stream: MediaStream;
+}
+
+
+const VideoCallBoxListItem : React.FC<VideoListItemProps>= ({stream}) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const [isSharing, setIsSharing] = useState(false);
+  const [peerConnection, setPeerConnection] = useState<RTCPeerConnection | null>(null);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.srcObject = stream;
+    }
+  }, [stream]);
+
+  const handleShareScreen = () => {
+    setIsSharing(!isSharing);
+  };
   return (
     <Box sx={{
       height:'100%',
@@ -28,14 +45,14 @@ const VideoCallBoxListItem : React.FC<MemberListItemProps>= ({member}) => {
           boxShadow: '0px 5px 10px -3px #424241',
           position: 'relative'
         }}>
-        {/* <video ref={videoRef} autoPlay className='w-full h-full rounded-2xl'></video> */}
+        <video ref={videoRef} autoPlay className='w-full h-full rounded-2xl'></video>
           <Box>
-            <Box sx={{
+            {/* <Box sx={{
               color: 'white', 
               position:'absolute',
               bottom: '8px',
               right: '16px'
-              }}>{member.name}</Box>
+              }}>{member.name}</Box> */}
           </Box>
         </Box>
     </Box>

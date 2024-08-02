@@ -14,7 +14,7 @@ import type { AlertInfo } from "../../types/join";
 async function login(email: string, password: string) {
   try {
     const response = await axios.post(
-      "http://kpring.duckdns.org/user/api/v1/login",
+      "https://kpring.duckdns.org/user/api/v1/login",
       { email, password },
       {
         headers: {
