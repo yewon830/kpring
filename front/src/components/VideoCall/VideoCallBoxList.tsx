@@ -5,6 +5,7 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 
 import UserVideoComponent from './UserVideoComponents';
 import { Box } from '@mui/material';
+import VideoCallToolBar from './VideoCallToolBar';
 
 // 서버 주소 (현재는 튜토리얼 서버)
 const APPLICATION_SERVER_URL = "http://localhost:5000/";
@@ -19,6 +20,10 @@ const VideoCallBoxList = () => {
     const [publisher, setPublisher] = useState<Publisher | null>(null); //영상 송출자 : 로컬 웹캠 스트림
     const [subscribers, setSubscribers] = useState<StreamManager[]>([]); // 영상 시청자 : 다른 사용자 활성 스트림
     const [currentVideoDevice, setCurrentVideoDevice] = useState<Device | null>(null);
+
+    const [isAudioEnabled, setIsAudioEnabled] = useState(false); //로컬 오디오 실행중
+    const [isVideoEnabled, setIsVideoEnabled] = useState(false); //로컬 비디오 실행중
+
 
     const OV = useRef(new OpenVidu());
 
@@ -60,6 +65,7 @@ const VideoCallBoxList = () => {
 
         setSession(mySession);
     }, []);
+    
 
     useEffect(() => {
         if (session) {
@@ -71,8 +77,8 @@ const VideoCallBoxList = () => {
                     let publisher = await OV.current.initPublisherAsync(undefined, {
                         audioSource: undefined,
                         videoSource: undefined,
-                        publishAudio: true,
-                        publishVideo: true,
+                        publishAudio: false, //초기에 오디오 끄기
+                        publishVideo: false, //초기에 비디오 끄기
                         resolution: '640x480',
                         frameRate: 30,
                         insertMode: 'APPEND',
@@ -85,7 +91,6 @@ const VideoCallBoxList = () => {
                     const videoDevices = devices.filter(device => device.kind === 'videoinput');
                     const currentVideoDeviceId = publisher.stream.getMediaStream().getVideoTracks()[0].getSettings().deviceId;
                     const currentVideoDevice = videoDevices.find(device => device.deviceId === currentVideoDeviceId);
-
                     setMainStreamManager(publisher);
                     setPublisher(publisher);
                     if (currentVideoDevice) {
@@ -103,6 +108,26 @@ const VideoCallBoxList = () => {
             });
         }
     }, [session, myUserName]);
+
+    const toggleAudio = () => {
+        if (publisher) {
+            const audioEnabled = !isAudioEnabled;
+            publisher.publishAudio(audioEnabled); // 오디오 상태 변경
+            setIsAudioEnabled(audioEnabled);
+            console.log(`Audio is now ${audioEnabled ? 'enabled' : 'disabled'}`); // 상태 확인
+        } else {
+            console.error('Publisher is not initialized.');
+        }
+    };
+
+    const toggleVideo = () => {
+        if (publisher) {
+            const videoEnabled = !isVideoEnabled;
+            publisher.publishVideo(videoEnabled);
+            setIsVideoEnabled(videoEnabled);
+        }
+    };
+
 
 
     const leaveSession = useCallback(() => {
@@ -286,17 +311,25 @@ const VideoCallBoxList = () => {
                                     { publisher && <UserVideoComponent
                                         streamManager={publisher} />}
                                 </div>
-                            ) : null}
+                            ) : null }
                             {subscribers.map((sub, i) => (
                                 <div key={sub.id} onClick={() => handleMainVideoStream(sub)}>
                                     <UserVideoComponent streamManager={sub} />
                                 </div>
                             ))}
                     </Box>
-
+                
                     
                 </div>
             ) : null}
+            <div className="fixed bottom-[20px] left-1/2 -translate-x-1/3">
+                <VideoCallToolBar 
+                    toggleAudio = {toggleAudio}
+                    toggleVideo ={toggleVideo}
+                    isAudioEnabled = {isAudioEnabled}
+                    isVideoEnabled = {isVideoEnabled}
+                    />
+            </div>
         </div>
     );
 }

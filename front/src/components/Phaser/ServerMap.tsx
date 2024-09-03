@@ -6,7 +6,6 @@ import StartGame from "./main";
 import { EventBus } from "./EventBus";
 import { ServerMapProps, ServerMapTypes } from "../../types/map";
 import VideoCallBoxList from "../VideoCall/VideoCallBoxList";
-import VideoCallToolBar from "../VideoCall/VideoCallToolBar";
 
 export const ServerMap = forwardRef<ServerMapTypes, ServerMapProps>(
   function ServerMap({ currentActiveScene }, ref) {
@@ -56,9 +55,7 @@ export const ServerMap = forwardRef<ServerMapTypes, ServerMapProps>(
           <VideoCallBoxList />
         </div>
 
-        <div className="fixed bottom-[20px] left-1/2 -translate-x-1/3">
-          <VideoCallToolBar />
-        </div>
+
       </div>
     );
   }
