@@ -6,15 +6,41 @@ import React, { useCallback, useEffect, useRef, useState } from 'react';
 import UserVideoComponent from './UserVideoComponents';
 import { Box } from '@mui/material';
 import VideoCallToolBar from './VideoCallToolBar';
+import {jwtDecode} from 'jwt-decode';
+import { useParams } from 'react-router';
 
 // 서버 주소 (현재는 튜토리얼 서버)
 const APPLICATION_SERVER_URL = "http://localhost:5000/";
-
+interface DecodedUserInfo{
+    userId: string,
+    id: string,
+    type: string,
+    nickname: string,
+    iat: number,
+    exp: number
+  }
 
 // 화상회의 주요 구성 요소 컴포넌트 : 화상회의 참여 및 관리 기능
 const VideoCallBoxList = () => {
-    const [mySessionId, setMySessionId] = useState('SessionA') //세션 아이디
-    const [myUserName, setMyUserName] = useState(`Participant${Math.floor(Math.random() * 100)}`) //참가자 닉네임(지금은 임의로)
+    const {serverId} = useParams();
+    const [mySessionId, setMySessionId] = useState(serverId || '');
+    const localNickName = localStorage.getItem('dicoTown_AccessToken') || '익명'; // 기본값 설정
+
+    // 유저 이름 디코딩해서 사용하기 (만약 이후 백엔드에서 따로 응답값 준다면 그걸로 변경)
+    let userNickName;
+
+    if (localNickName !== '익명') {
+    try {
+        const decoded : DecodedUserInfo = jwtDecode(localNickName); // JWT 디코딩
+        userNickName = decoded.nickname
+    } catch (error) {
+        console.error('Token decoding failed:', error);
+        userNickName = '익명'; // 디코딩 실패 시 기본값
+    }
+    } else {
+        userNickName = '익명'; // 기본값
+    }
+    const [myUserName, setMyUserName] = useState(userNickName) //참가자 닉네임
     const [session, setSession] = useState<Session | ''>('');
     const [mainStreamManager, setMainStreamManager] = useState<Publisher | null >(null);
     const [publisher, setPublisher] = useState<Publisher | null>(null); //영상 송출자 : 로컬 웹캠 스트림
@@ -40,11 +66,11 @@ const VideoCallBoxList = () => {
     // 
     const handleMainVideoStream = useCallback((stream: StreamManager) => {
       const publisher = stream as Publisher; // 타입 변환
-  
-      if (mainStreamManager !== publisher) {
-          setMainStreamManager(publisher);
-      }
-  }, [mainStreamManager]);
+
+    if (mainStreamManager !== publisher) {
+        setMainStreamManager(publisher);
+        }
+    }, [mainStreamManager]);
 
     // join 버튼을 클릭한 후에 호출됨. (사용자 닉네임 입력, server에서 두개의 토큰을 가져옴)
     const joinSession = useCallback(() => {
@@ -65,6 +91,10 @@ const VideoCallBoxList = () => {
 
         setSession(mySession);
     }, []);
+
+    useEffect(()=>{
+        joinSession();
+    },[])
     
 
     useEffect(() => {
@@ -140,8 +170,8 @@ const VideoCallBoxList = () => {
         OV.current = new OpenVidu();
         setSession('');
         setSubscribers([]);
-        setMySessionId('SessionA');
-        setMyUserName('Participant' + Math.floor(Math.random() * 100));
+        setMySessionId('');
+        setMyUserName('');
         setMainStreamManager(null);
         setPublisher(null);
     }, [session]);
@@ -225,6 +255,7 @@ const VideoCallBoxList = () => {
             createToken(sessionId),
         );
     }, [mySessionId]);
+
     //세션 id로 세션 생성하고 세션 아이디 반환
     const createSession = async (sessionId : string) => {
         const response = await axios.post(APPLICATION_SERVER_URL + 'api/sessions', { customSessionId: sessionId }, {
@@ -241,7 +272,7 @@ const VideoCallBoxList = () => {
     };
     return (
         <div className='w-100%'>
-            {session === '' ? (
+            {/* {session === '' ? (
                 <div id="join">
                     <div id="join-dialog" className="jumbotron vertical-center">
                         <form className="form-group" onSubmit={joinSession}>
@@ -273,7 +304,7 @@ const VideoCallBoxList = () => {
                         </form>
                     </div>
                 </div>
-            ) : null}
+            ) : null} */}
 
             {session !== undefined ? (
                 <div id="session">
@@ -309,12 +340,12 @@ const VideoCallBoxList = () => {
                         {publisher !== null ? (
                                 <div onClick={() => handleMainVideoStream(publisher)} className='h-full'>
                                     { publisher && <UserVideoComponent
-                                        streamManager={publisher} />}
+                                        streamManager={publisher} isVideoEnabled = {isVideoEnabled}/>}
                                 </div>
                             ) : null }
                             {subscribers.map((sub, i) => (
                                 <div key={sub.id} onClick={() => handleMainVideoStream(sub)}>
-                                    <UserVideoComponent streamManager={sub} />
+                                    <UserVideoComponent streamManager={sub} isVideoEnabled = {isVideoEnabled}/>
                                 </div>
                             ))}
                     </Box>

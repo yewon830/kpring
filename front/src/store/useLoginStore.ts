@@ -6,6 +6,8 @@ export interface LoginState {
   setTokens: (accessToken: string, refreshToken: string) => void;
   clearTokens: () => void;
   isLoggedIn: () => boolean;
+  userNickName : string;
+  setUserNickName : (userNickName : string) => void;
 }
 
 export const useLoginStore = create<LoginState>((set) => ({
@@ -26,4 +28,8 @@ export const useLoginStore = create<LoginState>((set) => ({
     // accessToken이 존재하면 true, 없으면 false
     return !!accessToken;
   },
+  userNickName : '',
+  setUserNickName : (userNickName : string) =>{
+    set({userNickName : userNickName})
+  }
 }));
